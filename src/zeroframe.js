@@ -8,6 +8,10 @@ const CMD_WRAPPER_CLOSE_WEBSOCKET = 'wrapperClosedWebsocket'
 
 class ZeroFrame {
     constructor(url) {
+        this.onCloseWebsocket = bind(this.onCloseWebsocket, this)
+        this.onOpenWebsocket = bind(this.onOpenWebsocket, this)
+        this.route = bind(this.route, this)
+        this.onMessage = bind(this.onMessage, this)
         this.url = url
         this.waiting_cb = {}
         this.wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, "$1")
