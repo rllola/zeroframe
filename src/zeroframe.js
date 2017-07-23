@@ -8,7 +8,7 @@ const CMD_WRAPPER_CLOSE_WEBSOCKET = 'wrapperClosedWebsocket'
 
 class ZeroFrame {
     constructor(url) {
-      
+
         this.url = url
         this.waiting_cb = {}
         this.wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, "$1")
@@ -92,4 +92,4 @@ class ZeroFrame {
     }
 }
 
-export default new ZeroFrame
+export default ZeroFrame

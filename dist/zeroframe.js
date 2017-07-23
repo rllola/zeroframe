@@ -129,4 +129,4 @@ var ZeroFrame = function () {
     return ZeroFrame;
 }();
 
-exports.default = new ZeroFrame();
+exports.default = ZeroFrame;

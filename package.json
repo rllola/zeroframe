@@ -1,6 +1,6 @@
 {
   "name": "zeroframe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ZeroFrame library for zeronet website dev.",
   "main": "dist/zeroframe.js",
   "scripts": {
