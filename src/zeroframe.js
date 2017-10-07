@@ -1,3 +1,7 @@
+// Version 1.0.0 - Initial release
+// Version 1.1.0 (2017-08-02) - Added cmdp function that returns promise instead of using callback
+// Version 1.2.0 (2017-08-02) - Added Ajax monkey patch to emulate XMLHttpRequest over ZeroFrame API
+
 const CMD_INNER_READY = 'innerReady'
 const CMD_RESPONSE = 'response'
 const CMD_WRAPPER_READY = 'wrapperReady'
@@ -8,7 +12,6 @@ const CMD_WRAPPER_CLOSE_WEBSOCKET = 'wrapperClosedWebsocket'
 
 class ZeroFrame {
     constructor(url) {
-
         this.url = url
         this.waiting_cb = {}
         this.wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, "$1")
@@ -46,12 +49,12 @@ class ZeroFrame {
         } else if (cmd === CMD_WRAPPER_CLOSE_WEBSOCKET) {
             this.onCloseWebsocket()
         } else {
-            this.route(cmd, message)
+            this.onRequest(cmd, message)
         }
     }
 
-    route(cmd, message) {
-        this.log("Unknown command", message)
+    onRequest(cmd, message) {
+        this.log("Unknown request", message)
     }
 
     response(to, result) {
@@ -67,6 +70,18 @@ class ZeroFrame {
             cmd: cmd,
             params: params
         }, cb)
+    }
+
+    cmdp(cmd, params={}) {
+        return new Promise((resolve, reject) => {
+            this.cmd(cmd, params, (res) => {
+                if (res.error) {
+                    reject(res.error)
+                } else {
+                    resolve(res)
+                }
+            })
+        })
     }
 
     send(message, cb=null) {
@@ -90,6 +105,46 @@ class ZeroFrame {
     onCloseWebsocket() {
         this.log('Websocket close')
     }
+
+    monkeyPatchAjax() {
+        window.XMLHttpRequest = ZeroFakeXMLHttpRequest
+        ZeroFakeXMLHttpRequest.zero_frame = this
+    }
+}
+
+class ZeroFakeXMLHttpRequest {
+    open (method, path) {
+        this.path = path
+        this.zero_frame = ZeroFakeXMLHttpRequest.zero_frame
+    }
+
+    onResult (res) {
+        this.status = 200
+        this.statusText = "200 OK"
+        this.readyState = 4 // Done
+        this.responseType = "text"
+        this.responseText = this.response = res
+        if (this.onload) this.onload()
+        if (this.onreadystatechange) this.onreadystatechange()
+    }
+
+    setRequestHeader (key, val) {
+        return
+    }
+
+    getAllResponseHeaders () {
+        return ""
+    }
+
+    getAllResponseHeaders (name) {
+        return null
+    }
+
+    send () {
+        this.zero_frame.cmd("fileGet", this.path, (res) => this.onResult(res))
+
+    }
 }
 
 export default ZeroFrame
+export { ZeroFakeXMLHttpRequest }
