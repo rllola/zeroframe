@@ -1,0 +1,73 @@
+name: Build and publish ZeroFrame from ZeroHello repository
+on: repository_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Checkout tags
+      run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+    - name: Prepare Git name and email
+      run: |
+        git config --local user.name "GitHub Actions Bot"
+        git config --local user.email "actions@github.com"
+
+    - name: Download and preprocess ZeroFrame from ZeroHello repository
+      run: |
+        rm -r src pkg || true; mkdir src
+        wget -O src/index.js https://raw.githubusercontent.com/HelloZeroNet/ZeroHello/master/template-new/js/ZeroFrame.js
+        printf "\ntry { module.exports = ZeroFrame } catch (err) { }\nexport default ZeroFrame\n" >> src/index.js
+
+    - name: Get ZeroFrame version from comments
+      shell: python
+      run: |
+        import re
+        with open("src/index.js") as file:
+          version = re.findall(r"\/\/ Version (\d+.\d+.\d+)", file.read(), re.MULTILINE)[-1]
+          print("::set-env name=VERSION::" + version)
+
+    - name: Check ZeroFrame version
+      id: zeroframe-check-version
+      run: |
+        if [[ $(git describe --abbrev=0 --tags) == v$VERSION ]]
+        then
+          echo ::set-output name=latest::true
+        else
+          echo ::set-output name=latest::false
+        fi
+
+    - name: Commit and tag new version
+      if: steps.zeroframe-check-version.outputs.latest != 'true'
+      run: |
+        npm version --no-git-tag-version v$VERSION
+        git add src/index.js package.json
+        git commit -m "Update to ZeroFrame $VERSION"
+        git tag v$VERSION
+
+    - name: Build ZeroFrame with Pika Pack
+      if: steps.zeroframe-check-version.outputs.latest != 'true'
+      run: |
+        yarn install
+        yarn build
+
+    - name: Publish new version to GitHub
+      if: steps.zeroframe-check-version.outputs.latest != 'true'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish new version to npm
+      if: steps.zeroframe-check-version.outputs.latest != 'true'
+      run: yarn publish pkg
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
