@@ -1,29 +1,47 @@
 {
   "name": "zeroframe",
-  "version": "1.2.0",
-  "description": "ZeroFrame library for zeronet website dev.",
-  "main": "dist/zeroframe.js",
-  "scripts": {
-    "build": "babel src --out-dir dist",
-    "prepublish": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rllola/zeroframe.git"
-  },
+  "version": "0.0.0",
+  "description": "Library for development of ZeroNet sites",
   "keywords": [
     "zeronet",
-    "zeroframe"
+    "zeroframe",
+    "library",
+    "p2p",
+    "decentralized"
   ],
-  "author": "Lola <lola@zeroid.bit>",
+  "author": "shortcutme <tamas@zeronet.io>",
+  "contributors": [
+    "Lola <lola@zeroid.bit>",
+    "Filip Š <projects@filips.si>"
+  ],
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/rllola/zeroframe/issues"
+  "homepage": "https://github.com/rllola/zeroframe/",
+  "bugs": "https://github.com/rllola/zeroframe/issues/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rllola/zeroframe.git"
   },
-  "homepage": "https://github.com/rllola/zeroframe#readme",
+  "@pika/pack": {
+    "pipeline": [
+      [
+        "@pika/plugin-standard-pkg"
+      ],
+      [
+        "@pika/plugin-build-node"
+      ],
+      [
+        "@pika/plugin-build-web"
+      ]
+    ]
+  },
   "devDependencies": {
-    "babel-cli": "^6.11.4",
-    "babel-preset-es2015": "^6.9.0"
+    "@pika/cli": "^0.2.0",
+    "@pika/pack": "^0.5.0",
+    "@pika/plugin-build-node": "^0.8.1",
+    "@pika/plugin-build-web": "^0.8.1",
+    "@pika/plugin-standard-pkg": "^0.8.1"
+  },
+  "scripts": {
+    "build": "pika build"
   }
 }
